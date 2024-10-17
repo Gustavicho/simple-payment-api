@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\Trait\EntityDataManager;
+use App\Trait\Timestamp;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -16,6 +18,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_DOCUMENT', fields: ['document'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    use Timestamp;
+    use EntityDataManager;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

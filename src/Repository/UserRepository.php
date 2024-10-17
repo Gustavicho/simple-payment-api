@@ -33,15 +33,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-        public function findByDocument(string $doc): ?User
-        {
-            return $this->createQueryBuilder('u')
-                ->andWhere('u.document = :doc')
-                ->setParameter('doc', $doc)
-                ->getQuery()
-                ->getOneOrNullResult()
-            ;
-        }
+    public function findByDocument(string $doc): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.document = :doc')
+            ->setParameter('doc', $doc)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 
     //    /**
     //     * @return User[] Returns an array of User objects

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TransactionRepository;
+use App\Trait\EntityDataManager;
+use App\Trait\Timestamp;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -10,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: '`transactions`')]
 class Transaction
 {
+    use Timestamp;
+    use EntityDataManager;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -18,11 +23,11 @@ class Transaction
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $value = null;
 
-    #[ORM\ManyToOne(inversedBy: 'transactionsSent')]
+    #[ORM\ManyToOne(inversedBy: 'transactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $sender = null;
 
-    #[ORM\ManyToOne(inversedBy: 'transactionsReceived')]
+    #[ORM\ManyToOne(inversedBy: 'transactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $receiver = null;
 
