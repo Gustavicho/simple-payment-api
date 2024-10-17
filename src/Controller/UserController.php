@@ -12,8 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     public function __construct(
-        private UserService $us,
-        private TransactionService $ts,
+        private UserService $userService,
+        private TransactionService $transactionService,
     ) {
     }
 
@@ -21,7 +21,7 @@ class UserController extends AbstractController
     public function index(): Response
     {
         return $this->json(
-            $this->us->findAll(),
+            $this->userService->findAll(),
             context: ['groups' => ['user:read']]
         );
     }
@@ -29,11 +29,10 @@ class UserController extends AbstractController
     #[Route('/users', name: 'store_user', methods: ['POST'])]
     public function store(Request $req): Response
     {
-        $user = $this->us->createUser($req);
+        $user = $this->userService->createUser($req);
 
-        // validar o objeto usuário
-
-        $this->us->save($user);
+        $this->userService->validate($user);
+        $this->userService->persist($user, true);
 
         return $this->json(
             [
@@ -48,11 +47,10 @@ class UserController extends AbstractController
     #[Route('/transfer', name: 'transfer', methods: ['POST'])]
     public function transfer(Request $req): Response
     {
-        $transaction = $this->ts->createTransaction($req);
+        $transaction = $this->transactionService->createTransaction($req);
 
-        // validar o objeto transação
-
-        $this->ts->execTransaction($transaction);
+        $this->transactionService->validate($transaction);
+        $this->transactionService->execTransaction($transaction);
 
         return $this->json([
             'message' => 'Transfered successfully',

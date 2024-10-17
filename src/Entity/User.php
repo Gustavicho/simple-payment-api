@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`users`')]
@@ -26,6 +27,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['transaction:read'])]
     private ?int $id = null;
 
+    #[Assert\Email]
+    #[Assert\NotNull]
     #[ORM\Column(length: 180, unique: true)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $email = null;
@@ -33,6 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var list<string> The user roles
      */
+    #[Assert\Count(min: 1, minMessage: 'The user must have at least one role.')]
     #[ORM\Column]
     #[Groups(['user:write'])]
     private array $roles = [];
@@ -40,18 +44,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      */
+    #[Assert\NotNull]
     #[ORM\Column]
     #[Groups(['user:write'])]
     private ?string $password = null;
 
+    #[Assert\NotNull]
     #[ORM\Column(length: 255)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $fullName = null;
 
+    #[Assert\NotNull]
+    #[Assert\Length(min: 14, max: 18)]
     #[ORM\Column(length: 18, unique: true)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $document = null;
 
+    #[Assert\NotNull]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $balance = null;

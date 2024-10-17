@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Entity\Transaction;
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Trait\DataPersister;
 use SebastianBergmann\Diff\ConfigurationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,9 +13,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TransactionService
 {
+    use DataPersister;
+
     public function __construct(
         private UserService $userService,
-        private EntityManagerInterface $em,
         private NotifyService $notifier,
         private HttpClientInterface $client,
         private SerializerInterface $serializer,
@@ -36,7 +37,9 @@ class TransactionService
         $this->transferValue($sender, $receiver, $transaction);
         $this->notifier->sendNotification($receiver, $transaction);
 
-        $this->save($transaction);
+        $this->persist($sender);
+        $this->persist($receiver);
+        $this->persist($transaction, true);
     }
 
     private function transactionHasAuthorization(): bool
@@ -59,12 +62,6 @@ class TransactionService
             'json',
             ['groups' => ['transaction:write']]
         )->setCreatedAt('now', 'America/Manaus');
-    }
-
-    public function save(Transaction $transaction): void
-    {
-        $this->em->persist($transaction);
-        $this->em->flush();
     }
 
     public function transferValue(User $sender, User $receiver, Transaction $transaction): void

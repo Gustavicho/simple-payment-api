@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Trait\DataPersister;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -14,11 +14,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class UserService
 {
+    use DataPersister;
+
     public const NOT_ENOUGH = -1;
 
     public function __construct(
         private UserRepository $repository,
-        private EntityManagerInterface $em,
         private SerializerInterface $serializer,
     ) {
     }
@@ -58,11 +59,5 @@ class UserService
     public function findAll(): array
     {
         return $this->findAll()->findAll();
-    }
-
-    public function save(User $user): void
-    {
-        $this->em->persist($user);
-        $this->em->flush();
     }
 }
