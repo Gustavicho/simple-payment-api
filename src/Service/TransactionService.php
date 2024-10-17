@@ -6,7 +6,9 @@ use App\Entity\Transaction;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use SebastianBergmann\Diff\ConfigurationException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TransactionService
@@ -16,13 +18,14 @@ class TransactionService
         private EntityManagerInterface $em,
         private NotifyService $notifier,
         private HttpClientInterface $client,
+        private SerializerInterface $serializer,
     ) {
     }
 
     public function execTransaction(Transaction $transaction): void
     {
-        $sender = $this->userService->findById($transaction->getSender()->getId());
-        $receiver = $this->userService->findById($transaction->getReceiver()->getId());
+        $sender = $this->userService->findById(3/* $transaction->getSender()->getId() */);
+        $receiver = $this->userService->findById(4/* $transaction->getReceiver()->getId() */);
 
         $this->userService->validateTransaction($sender, $transaction->getValue());
 
@@ -43,9 +46,19 @@ class TransactionService
             throw new ConfigurationException('`API_AUTHORIZATOR` is not set in `.env` file');
         }
 
-        $res = $this->client->request('GET', $url)->toArray();
+        $res = $this->client->request('GET', $url)->getStatusCode();
 
-        return $res['authorization'];
+        return Response::HTTP_OK == $res;
+    }
+
+    public function createTransaction(Request $req): Transaction
+    {
+        return $this->serializer->deserialize(
+            $req->getContent(),
+            Transaction::class,
+            'json',
+            ['groups' => ['transaction:write']]
+        )->setCreatedAt('now', 'America/Manaus');
     }
 
     public function save(Transaction $transaction): void
@@ -57,6 +70,9 @@ class TransactionService
     public function transferValue(User $sender, User $receiver, Transaction $transaction): void
     {
         $sender->setBalance(bcsub($sender->getBalance(), $transaction->getValue(), 2));
+        $sender->addSentTransaction($transaction);
+
         $receiver->setBalance(bcadd($receiver->getBalance(), $transaction->getValue(), 2));
+        $receiver->addReceivedTransaction($transaction);
     }
 }

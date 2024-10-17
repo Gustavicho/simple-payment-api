@@ -3,32 +3,36 @@
 namespace App\Entity;
 
 use App\Repository\TransactionRepository;
-use App\Trait\EntityDataManager;
 use App\Trait\Timestamp;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TransactionRepository::class)]
 #[ORM\Table(name: '`transactions`')]
+#[Groups(['transaction:read'])]
 class Transaction
 {
     use Timestamp;
-    use EntityDataManager;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['transaction:write'])]
     private ?string $value = null;
 
-    #[ORM\ManyToOne(inversedBy: 'transactions')]
+    #[ORM\ManyToOne(inversedBy: 'sentTransactions')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['transaction:write'])]
     private ?User $sender = null;
 
-    #[ORM\ManyToOne(inversedBy: 'transactions')]
+    #[ORM\ManyToOne(inversedBy: 'receivedTransactions', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['transaction:write'])]
     private ?User $receiver = null;
 
     public function getId(): ?int

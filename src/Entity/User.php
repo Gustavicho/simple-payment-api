@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-use App\Trait\EntityDataManager;
 use App\Trait\Timestamp;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`users`')]
@@ -19,53 +19,61 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Timestamp;
-    use EntityDataManager;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['transaction:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['user:write'])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $fullName = null;
 
     #[ORM\Column(length: 18, unique: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $document = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $balance = null;
 
     /**
      * @var Collection<int, Transaction>
      */
     #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'sender')]
-    private Collection $transactionsSent;
+    #[Groups(['user:read', 'user:write'])]
+    private Collection $sentTransactions;
 
     /**
      * @var Collection<int, Transaction>
      */
     #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'receiver')]
-    private Collection $transactionsReceived;
+    #[Groups(['user:read', 'user:write'])]
+    private Collection $receivedTransactions;
 
     public function __construct()
     {
-        $this->transactionsSent = new ArrayCollection();
-        $this->transactionsReceived = new ArrayCollection();
+        $this->sentTransactions = new ArrayCollection();
+        $this->receivedTransactions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -184,13 +192,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getTransactionsSent(): Collection
     {
-        return $this->transactionsSent;
+        return $this->sentTransactions;
     }
 
     public function addSentTransaction(Transaction $transaction): static
     {
-        if (!$this->transactionsSent->contains($transaction)) {
-            $this->transactionsSent->add($transaction);
+        if (!$this->sentTransactions->contains($transaction)) {
+            $this->sentTransactions->add($transaction);
             $transaction->setSender($this);
         }
 
@@ -199,7 +207,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeSentTransaction(Transaction $transaction): static
     {
-        if ($this->transactionsSent->removeElement($transaction)) {
+        if ($this->sentTransactions->removeElement($transaction)) {
             // set the owning side to null (unless already changed)
             if ($transaction->getSender() === $this) {
                 $transaction->setSender(null);
@@ -214,13 +222,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getTransactionsReceived(): Collection
     {
-        return $this->transactionsReceived;
+        return $this->receivedTransactions;
     }
 
     public function addReceivedTransaction(Transaction $transaction): static
     {
-        if (!$this->transactionsReceived->contains($transaction)) {
-            $this->transactionsReceived->add($transaction);
+        if (!$this->receivedTransactions->contains($transaction)) {
+            $this->receivedTransactions->add($transaction);
             $transaction->setSender($this);
         }
 
@@ -229,7 +237,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeReceivedTransaction(Transaction $transaction): static
     {
-        if ($this->transactionsReceived->removeElement($transaction)) {
+        if ($this->receivedTransactions->removeElement($transaction)) {
             // set the owning side to null (unless already changed)
             if ($transaction->getSender() === $this) {
                 $transaction->setSender(null);
