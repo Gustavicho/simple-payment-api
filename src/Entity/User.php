@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use App\Trait\Timestamp;
+use App\Validator\Document as DocAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -55,7 +56,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $fullName = null;
 
     #[Assert\NotNull]
-    #[Assert\Length(min: 14, max: 18)]
+    #[Assert\AtLeastOneOf([
+        new DocAssert\CPF(),
+        new DocAssert\CNPJ(),
+    ])]
     #[ORM\Column(length: 18, unique: true)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $document = null;
