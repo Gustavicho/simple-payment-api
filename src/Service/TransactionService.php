@@ -5,10 +5,11 @@ namespace App\Service;
 use App\Entity\Transaction;
 use App\Entity\User;
 use App\Trait\DataPersister;
-use SebastianBergmann\Diff\ConfigurationException;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TransactionService
@@ -20,7 +21,11 @@ class TransactionService
         private NotifyService $notifier,
         private HttpClientInterface $client,
         private SerializerInterface $serializer,
+        private ValidatorInterface $validator,
+        private EntityManagerInterface $entityManager,
     ) {
+        $this->entityManager = $entityManager;
+        $this->validator = $validator;
     }
 
     public function execTransaction(Transaction $transaction): void
@@ -46,7 +51,7 @@ class TransactionService
     {
         $url = $_ENV['API_AUTHORIZATOR'] ?? null;
         if (!$url) {
-            throw new ConfigurationException('`API_AUTHORIZATOR` is not set in `.env` file');
+            throw new \Exception('`API_AUTHORIZATOR` is not set in `.env` file');
         }
 
         $res = $this->client->request('GET', $url)->getStatusCode();

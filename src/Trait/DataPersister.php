@@ -8,15 +8,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 trait DataPersister
 {
-    public function __construct(
-        private EntityManagerInterface $em,
-        private ValidatorInterface $v,
-    ) {
-    }
+    private EntityManagerInterface $entityManager;
+    private ValidatorInterface $validator;
 
     public function validate($object): void
     {
-        $erros = $this->v->validate($object);
+        $erros = $this->validator->validate($object);
         if (count($erros) > 0) {
             throw new \JsonException((string) $erros, Response::HTTP_BAD_REQUEST);
         }
@@ -24,10 +21,10 @@ trait DataPersister
 
     public function persist(object $object, bool $flush = false): void
     {
-        $this->em->persist($object);
+        $this->entityManager->persist($object);
 
         if ($flush) {
-            $this->em->flush();
+            $this->entityManager->flush();
         }
     }
 }
