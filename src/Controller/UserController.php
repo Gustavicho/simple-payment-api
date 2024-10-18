@@ -13,7 +13,6 @@ class UserController extends AbstractController
 {
     public function __construct(
         private UserService $userService,
-        private TransactionService $transactionService,
     ) {
     }
 
@@ -42,19 +41,5 @@ class UserController extends AbstractController
             Response::HTTP_CREATED,
             context: ['groups' => ['user:read']]
         );
-    }
-
-    #[Route('/transfer', name: 'transfer', methods: ['POST'])]
-    public function transfer(Request $req): Response
-    {
-        $transaction = $this->transactionService->createTransaction($req);
-
-        $this->transactionService->validate($transaction);
-        $this->transactionService->execTransaction($transaction);
-
-        return $this->json([
-            'message' => 'Transfered successfully',
-            'data' => $transaction,
-        ], Response::HTTP_CREATED);
     }
 }

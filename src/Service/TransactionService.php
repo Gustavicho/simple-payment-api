@@ -77,4 +77,9 @@ class TransactionService
         $receiver->setBalance(bcadd($receiver->getBalance(), $transaction->getValue(), 2));
         $receiver->addReceivedTransaction($transaction);
     }
+
+    public function findAll(): array
+    {
+        return $this->entityManager->getRepository(Transaction::class)->findAll();
+    }
 }
