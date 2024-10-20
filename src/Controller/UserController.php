@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Service\TransactionService;
 use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +34,7 @@ class UserController extends AbstractController
 
         return $this->json(
             [
+                'status' => 'success',
                 'message' => 'User created successfully',
                 'data' => $user,
             ],

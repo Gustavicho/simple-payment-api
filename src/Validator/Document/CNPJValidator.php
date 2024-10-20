@@ -23,6 +23,9 @@ class CNPJValidator extends ConstraintValidator
             return;
         }
 
+        // remove all non-digit characters
+        // because the method don't handdles dots and etc
+        $value = preg_replace('/\D/', '', $value);
         if (!$this->isFirstSecurityDigitValid($value) || !$this->isSecondSecurityDigitValid($value)) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', $value)

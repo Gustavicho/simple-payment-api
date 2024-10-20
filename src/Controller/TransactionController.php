@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Service\TransactionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
 
 class TransactionController extends AbstractController
 {
@@ -24,7 +24,6 @@ class TransactionController extends AbstractController
         );
     }
 
-
     #[Route('/transfer', name: 'store_transaction', methods: ['POST'])]
     public function store(Request $req): Response
     {
@@ -33,9 +32,14 @@ class TransactionController extends AbstractController
         $this->transactionService->validate($transaction);
         $this->transactionService->execTransaction($transaction);
 
-        return $this->json([
-            'message' => 'Transfered successfully',
-            'data' => $transaction,
-        ], Response::HTTP_CREATED);
+        return $this->json(
+            [
+                'status' => 'success',
+                'message' => 'Transfered successfully',
+                'data' => $transaction,
+            ],
+            Response::HTTP_CREATED,
+            context: ['groups' => ['transaction:read']],
+        );
     }
 }
