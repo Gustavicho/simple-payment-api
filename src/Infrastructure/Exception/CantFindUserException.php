@@ -5,7 +5,7 @@ namespace App\Infrastructure\Exception;
 use App\Trait\DebugDetails;
 use Symfony\Component\HttpFoundation\Response;
 
-class CantFindUser extends \JsonException
+class CantFindUserException extends \JsonException
 {
     use DebugDetails;
 

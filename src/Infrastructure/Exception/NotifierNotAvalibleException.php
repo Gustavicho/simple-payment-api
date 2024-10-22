@@ -5,7 +5,7 @@ namespace App\Infrastructure\Exception;
 use App\Trait\DebugDetails;
 use Symfony\Component\HttpFoundation\Response;
 
-class notifierNotAvalibleException extends \JsonException
+class NotifierNotAvalibleException extends \JsonException
 {
     use DebugDetails;
 

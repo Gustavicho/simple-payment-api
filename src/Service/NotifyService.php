@@ -4,7 +4,8 @@ namespace App\Service;
 
 use App\Entity\Transaction;
 use App\Entity\User;
-use SebastianBergmann\Diff\ConfigurationException;
+use App\Infrastructure\Exception\DotEnvConfigurationException;
+use App\Infrastructure\Exception\NotifierNotAvalibleException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -19,7 +20,7 @@ class NotifyService
     {
         $url = $_ENV['API_NOTIFIER'] ?? null;
         if (!$url) {
-            throw new ConfigurationException('`API_NOTIFIER` is not set in `.env` file');
+            throw new DotEnvConfigurationException('Can\'t send notification. Is not possible acess to sevice that provides notification');
         }
 
         $data = [
@@ -38,7 +39,7 @@ class NotifyService
 
         $res = $this->client->request('POST', $url);
         if (Response::HTTP_GATEWAY_TIMEOUT == $res->getStatusCode()) {
-            throw new \JsonException('The service is not available, try again later', Response::HTTP_GATEWAY_TIMEOUT);
+            throw new NotifierNotAvalibleException('The service is not available, try again later');
         }
     }
 }
